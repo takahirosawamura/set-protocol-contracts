@@ -68,20 +68,6 @@ contract ZeroExExchangeWrapper
         returns (uint256)
     {
         
-        // We construct the following to allow calling fillOrder on ZeroEx V2 Exchange
-        // The layout of this orderData is in the table below.
-        // 
-        // | Section | Data                  | Offset              | Length          | Contents                      |
-        // |---------|-----------------------|---------------------|-----------------|-------------------------------|
-        // | Header  | signatureLength       | 0                   | 32              | Num Bytes of 0x Signature     |
-        // |         | orderLength           | 32                  | 32              | Num Bytes of 0x Order         |
-        // |         | makerAssetDataLength  | 64                  | 32              | Num Bytes of maker asset data |
-        // |         | takerAssetDataLength  | 96                  | 32              | Num Bytes of taker asset data |
-        // | Body    | fillAmount            | 128                 | 32              | taker asset fill amouint      |
-        // |         | signature             | 160                 | signatureLength | signature in bytes            |
-        // |         | order                 | 160+signatureLength | orderLength     | ZeroEx Order                  |
-
-
         // Parse fill Amount
         // uint256 fillAmount = parseFillAmount(_orderData);
 

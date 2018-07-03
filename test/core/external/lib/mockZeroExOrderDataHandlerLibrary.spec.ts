@@ -48,9 +48,6 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   
   let fillAmount = 5;
 
-  let makerAssetDataLength = 4;
-  let takerAssetDataLength = 3;
-
   let makerAssetAmount = new BigNumber(1);
   let takerAssetAmount = new BigNumber(2);
   let makerFee = new BigNumber(3);
@@ -60,6 +57,10 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
 
   let makerAssetData = "ABC";
   let takerAssetData = "XYZ";
+
+  let makerAssetDataLength = new BigNumber(makerAssetData.length);
+  let takerAssetDataLength = new BigNumber(takerAssetData.length);
+
 
   beforeEach(async () => {
     const zeroExExchangeWrapperInstance = await MockZeroExOrderDataHandlerLibrary.new(
@@ -108,41 +109,6 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
     });
   });
 
-  describe("#getZeroExOrderInBytes", async () => {
-    zeroExOrder = createZeroExOrder(
-      ownerAccount,
-      takerAddress,
-      feeRecipientAddress,
-      senderAddress,
-      makerAssetAmount,
-      takerAssetAmount,
-      makerFee,
-      takerFee,
-      expirationTimeSeconds,
-      salt,
-      makerAssetData,
-      takerAssetData,
-    );
-
-    const zeroExOrderBuffer = bufferZeroExOrder(zeroExOrder);
-
-    // Trim the 0x in the front and divide by two to get the num bytesgit 
-    zeroExOrderLength = Buffer.concat(zeroExOrderBuffer).length;
-
-    const subjectOrderData: Bytes32 = bufferArrayToHex(
-      bufferOrderHeader(signatureLength, zeroExOrderLength, 3, 4)
-      .concat(bufferFillAmount(fillAmount))
-      .concat(bufferSignature(signature))
-      .concat(zeroExOrderBuffer)
-    );
-
-    it("works", async () => {
-      const result = await zeroExExchangeWrapper.getZeroExOrderInBytes.callAsync(subjectOrderData);
-      expect(result).to.equal(bufferArrayToHex(zeroExOrderBuffer));
-    });
-  });
-
-
   describe("#parseZeroExOrder", async () => {
     zeroExOrder = createZeroExOrder(
       ownerAccount,
@@ -164,20 +130,35 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
     const subjectOrderData: Bytes32 = bufferArrayToHex(zeroExOrderBuffer);
 
     it("works", async () => {
-      const result = await zeroExExchangeWrapper.parseZeroExOrder.callAsync(subjectOrderData, new BigNumber(3), new BigNumber(3));
+      const result = await zeroExExchangeWrapper.parseZeroExOrder.callAsync(
+        subjectOrderData,
+        makerAssetDataLength,
+        takerAssetDataLength
+      );
 
-      expect(ownerAccount).to.equal(result[0][0]);
-      expect(takerAddress).to.equal(result[0][1]);
-      expect(feeRecipientAddress).to.equal(result[0][2]);
-      expect(senderAddress).to.equal(result[0][3]);
-      expect(makerAssetAmount).to.be.bignumber.equal(result[1][0]);
-      expect(takerAssetAmount).to.be.bignumber.equal(result[1][1]);
-      expect(makerFee).to.be.bignumber.equal(result[1][2]);
-      expect(takerFee).to.be.bignumber.equal(result[1][3]);
-      expect(expirationTimeSeconds).to.be.bignumber.equal(result[1][4]);
-      expect(salt).to.be.bignumber.equal(result[1][5]);
-      expect(makerAssetData).to.equal(web3.toAscii(result[2]));
-      expect(takerAssetData).to.equal(web3.toAscii(result[3]));
+      const [addresses, uints, makerAssetDataResult, takerAssetDataResult] = result;
+      const [makerResult, takerResult, feeRecipientResult, senderResult] = addresses;
+      const [
+        makerAssetAmountResult,
+        takerAssetAmountResult,
+        makerFeeResult,
+        takerFeeResult,
+        expirationResult,
+        saltResult,
+      ] = uints;
+
+      expect(ownerAccount).to.equal(makerResult);
+      expect(takerAddress).to.equal(takerResult);
+      expect(feeRecipientAddress).to.equal(feeRecipientResult);
+      expect(senderAddress).to.equal(senderResult);
+      expect(makerAssetAmount).to.be.bignumber.equal(makerAssetAmountResult);
+      expect(takerAssetAmount).to.be.bignumber.equal(takerAssetAmountResult);
+      expect(makerFee).to.be.bignumber.equal(makerFeeResult);
+      expect(takerFee).to.be.bignumber.equal(takerFeeResult);
+      expect(expirationTimeSeconds).to.be.bignumber.equal(expirationResult);
+      expect(salt).to.be.bignumber.equal(saltResult);
+      expect(makerAssetData).to.equal(web3.toAscii(makerAssetDataResult));
+      expect(takerAssetData).to.equal(web3.toAscii(takerAssetDataResult));
     });
   });
 
@@ -208,22 +189,32 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
       .concat(zeroExOrderBuffer)
     );
 
-
     it("works", async () => {
       const result = await zeroExExchangeWrapper.parseZeroExOrderData.callAsync(subjectOrderData);
       
-      expect(ownerAccount).to.equal(result[0][0]);
-      expect(takerAddress).to.equal(result[0][1]);
-      expect(feeRecipientAddress).to.equal(result[0][2]);
-      expect(senderAddress).to.equal(result[0][3]);
-      expect(makerAssetAmount).to.be.bignumber.equal(result[1][0]);
-      expect(takerAssetAmount).to.be.bignumber.equal(result[1][1]);
-      expect(makerFee).to.be.bignumber.equal(result[1][2]);
-      expect(takerFee).to.be.bignumber.equal(result[1][3]);
-      expect(expirationTimeSeconds).to.be.bignumber.equal(result[1][4]);
-      expect(salt).to.be.bignumber.equal(result[1][5]);
-      expect(makerAssetData).to.equal(web3.toAscii(result[2]));
-      expect(takerAssetData).to.equal(web3.toAscii(result[3]));
+      const [addresses, uints, makerAssetDataResult, takerAssetDataResult] = result;
+      const [makerResult, takerResult, feeRecipientResult, senderResult] = addresses;
+      const [
+        makerAssetAmountResult,
+        takerAssetAmountResult,
+        makerFeeResult,
+        takerFeeResult,
+        expirationResult,
+        saltResult,
+      ] = uints;
+
+      expect(ownerAccount).to.equal(makerResult);
+      expect(takerAddress).to.equal(takerResult);
+      expect(feeRecipientAddress).to.equal(feeRecipientResult);
+      expect(senderAddress).to.equal(senderResult);
+      expect(makerAssetAmount).to.be.bignumber.equal(makerAssetAmountResult);
+      expect(takerAssetAmount).to.be.bignumber.equal(takerAssetAmountResult);
+      expect(makerFee).to.be.bignumber.equal(makerFeeResult);
+      expect(takerFee).to.be.bignumber.equal(takerFeeResult);
+      expect(expirationTimeSeconds).to.be.bignumber.equal(expirationResult);
+      expect(salt).to.be.bignumber.equal(saltResult);
+      expect(makerAssetData).to.equal(web3.toAscii(makerAssetDataResult));
+      expect(takerAssetData).to.equal(web3.toAscii(takerAssetDataResult));
     });
   });
 });

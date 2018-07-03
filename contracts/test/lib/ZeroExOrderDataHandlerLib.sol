@@ -38,17 +38,6 @@ contract MockZeroExOrderDataHandlerLibrary {
         return ZeroExOrderDataHandler.sliceSignature(_orderData, signatureLength);
     }
 
-    function getZeroExOrderInBytes(bytes _orderData)
-        public
-        pure
-        returns (bytes)
-    {
-        ZeroExOrderDataHandler.ZeroExHeader memory header = ZeroExOrderDataHandler.parseOrderHeader(_orderData);
-        uint256 signatureLength = header.signatureLength;
-        uint256 orderLength = header.orderLength;
-        return ZeroExOrderDataHandler.sliceZeroExOrder(_orderData, signatureLength, orderLength);
-    }
-
     function parseZeroExOrder(bytes _zeroExOrder, uint _makerAssetDataLength, uint _takerAssetDataLength)
         public
         pure
