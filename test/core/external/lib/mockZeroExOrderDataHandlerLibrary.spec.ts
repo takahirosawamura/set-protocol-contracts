@@ -39,14 +39,11 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   const [ownerAccount, takerAddress, feeRecipientAddress, senderAddress] = accounts;
   let zeroExExchangeWrapper: MockZeroExOrderDataHandlerLibraryContract;
 
-
+  // Signature
   let signature: ZeroExSignature = "ABCDEFgiHIJKLMNOPQRSTUVWXYZ";
-  let signatureLength: UInt = signature.length;
 
-  let zeroExOrder: ZeroExOrder;
-  let zeroExOrderLength = 0;
-  
-  let fillAmount = 5;
+  // 0x Order Subject Data
+  let fillAmount = new BigNumber(5);
 
   let makerAssetAmount = new BigNumber(1);
   let takerAssetAmount = new BigNumber(2);
@@ -54,13 +51,29 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   let takerFee = new BigNumber(4);
   let expirationTimeSeconds = new BigNumber(5);
   let salt = new BigNumber(6);
-
   let makerAssetData = "ABC";
   let takerAssetData = "XYZ";
 
+  let zeroExOrder: ZeroExOrder = createZeroExOrder(
+    ownerAccount,
+    takerAddress,
+    feeRecipientAddress,
+    senderAddress,
+    makerAssetAmount,
+    takerAssetAmount,
+    makerFee,
+    takerFee,
+    expirationTimeSeconds,
+    salt,
+    makerAssetData,
+    takerAssetData,
+  );
+
+  // Header Subject Data
+  let signatureLength: UInt = new BigNumber(signature.length);
+  let zeroExOrderLength = new BigNumber(0);
   let makerAssetDataLength = new BigNumber(makerAssetData.length);
   let takerAssetDataLength = new BigNumber(takerAssetData.length);
-
 
   beforeEach(async () => {
     const zeroExExchangeWrapperInstance = await MockZeroExOrderDataHandlerLibrary.new(
@@ -74,21 +87,40 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   });
 
   describe("#getOrderDataHeader", async () => {
-    const subjectOrderData: Bytes32 = bufferArrayToHex(bufferOrderHeader(1, 2, 3, 4));
+    let subjectOrderData: Bytes32;
+
+    beforeEach(async () => {
+      subjectOrderData = bufferArrayToHex(bufferOrderHeader(
+        signatureLength,
+        zeroExOrderLength,
+        makerAssetDataLength,
+        takerAssetDataLength
+      ));
+    });
 
     it("works", async () => {
       const result = await zeroExExchangeWrapper.getOrderDataHeader.callAsync(subjectOrderData);
-      expect(result[0]).to.bignumber.equal(new BigNumber(1));
-      expect(result[1]).to.bignumber.equal(new BigNumber(2));
-      expect(result[2]).to.bignumber.equal(new BigNumber(3));
-      expect(result[3]).to.bignumber.equal(new BigNumber(4));
+
+      expect(result[0]).to.bignumber.equal(signatureLength);
+      expect(result[1]).to.bignumber.equal(zeroExOrderLength);
+      expect(result[2]).to.bignumber.equal(makerAssetDataLength);
+      expect(result[3]).to.bignumber.equal(takerAssetDataLength);
     });
   });
 
   describe("#getFillAmount", async () => {
-    const subjectOrderData: Bytes32 = bufferArrayToHex(
-      bufferOrderHeader(signatureLength, 2, 3, 4).concat(bufferFillAmount(fillAmount))
-    );
+    let subjectOrderData: Bytes32;
+
+    beforeEach(async () => {
+      subjectOrderData = bufferArrayToHex(
+        bufferOrderHeader(
+          signatureLength,
+          zeroExOrderLength,
+          makerAssetDataLength,
+          takerAssetDataLength,
+        ).concat(bufferFillAmount(fillAmount)
+      ));
+    });
 
     it("works", async () => {
       const result = await zeroExExchangeWrapper.getFillAmount.callAsync(subjectOrderData);
@@ -97,11 +129,20 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   });
 
   describe("#getSignature", async () => {
-    const subjectOrderData: Bytes32 = bufferArrayToHex(
-      bufferOrderHeader(signatureLength, 2, 3, 4)
-      .concat(bufferFillAmount(fillAmount))
-      .concat(bufferSignature(signature))
-    );
+    let subjectOrderData: Bytes32;
+
+    beforeEach(async () => {
+      subjectOrderData = bufferArrayToHex(
+        bufferOrderHeader(
+          signatureLength,
+          zeroExOrderLength,
+          makerAssetDataLength,
+          takerAssetDataLength,
+        )
+        .concat(bufferFillAmount(fillAmount))
+        .concat(bufferSignature(signature)
+      ));
+    });
 
     it("works", async () => {
       const result = await zeroExExchangeWrapper.getSignature.callAsync(subjectOrderData);
@@ -110,24 +151,13 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   });
 
   describe("#parseZeroExOrder", async () => {
-    zeroExOrder = createZeroExOrder(
-      ownerAccount,
-      takerAddress,
-      feeRecipientAddress,
-      senderAddress,
-      makerAssetAmount,
-      takerAssetAmount,
-      makerFee,
-      takerFee,
-      expirationTimeSeconds,
-      salt,
-      makerAssetData,
-      takerAssetData,
-    );
+    let subjectOrderData: Bytes32;
 
-    const zeroExOrderBuffer = bufferZeroExOrder(zeroExOrder);
+    beforeEach(async () => {
+      const zeroExOrderBuffer = bufferZeroExOrder(zeroExOrder);
 
-    const subjectOrderData: Bytes32 = bufferArrayToHex(zeroExOrderBuffer);
+      subjectOrderData = bufferArrayToHex(zeroExOrderBuffer);
+    });
 
     it("works", async () => {
       const result = await zeroExExchangeWrapper.parseZeroExOrder.callAsync(
@@ -163,31 +193,25 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
   });
 
   describe("#parseZeroExOrderData", async () => {
-    zeroExOrder = createZeroExOrder(
-      ownerAccount,
-      takerAddress,
-      feeRecipientAddress,
-      senderAddress,
-      makerAssetAmount,
-      takerAssetAmount,
-      makerFee,
-      takerFee,
-      expirationTimeSeconds,
-      salt,
-      makerAssetData,
-      takerAssetData,
-    );
+    let subjectOrderData: Bytes32;
 
-    const zeroExOrderBuffer = bufferZeroExOrder(zeroExOrder);
+    beforeEach(async () => {
+      const zeroExOrderBuffer = bufferZeroExOrder(zeroExOrder);
 
-    zeroExOrderLength = Buffer.concat(zeroExOrderBuffer).length;
+      zeroExOrderLength = new BigNumber(Buffer.concat(zeroExOrderBuffer).length);
 
-    const subjectOrderData: Bytes32 = bufferArrayToHex(
-      bufferOrderHeader(signatureLength, zeroExOrderLength, 3, 3)
-      .concat(bufferFillAmount(fillAmount))
-      .concat(bufferSignature(signature))
-      .concat(zeroExOrderBuffer)
-    );
+      subjectOrderData = bufferArrayToHex(
+        bufferOrderHeader(
+          signatureLength,
+          zeroExOrderLength,
+          makerAssetDataLength,
+          takerAssetDataLength,
+        )
+        .concat(bufferFillAmount(fillAmount))
+        .concat(bufferSignature(signature))
+        .concat(zeroExOrderBuffer)
+      );
+    });
 
     it("works", async () => {
       const result = await zeroExExchangeWrapper.parseZeroExOrderData.callAsync(subjectOrderData);

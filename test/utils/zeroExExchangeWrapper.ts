@@ -49,17 +49,17 @@ export function bufferOrderHeader(
   takerAssetDataLength: UInt,
 ): Buffer[] {
     return [
-      bufferAndLPad32(signatureLength),
-      bufferAndLPad32(orderLength),
-      bufferAndLPad32(makerAssetDataLength),
-      bufferAndLPad32(takerAssetDataLength),
+      bufferAndLPad32(web3.toHex(signatureLength)),
+      bufferAndLPad32(web3.toHex(orderLength)),
+      bufferAndLPad32(web3.toHex(makerAssetDataLength)),
+      bufferAndLPad32(web3.toHex(takerAssetDataLength)),
     ]
 }
 
 export function bufferFillAmount(
   fillAmount: UInt = 0,
 ): Buffer[] {
-    return [bufferAndLPad32(fillAmount)];
+    return [bufferAndLPad32(web3.toHex(fillAmount))];
 }
 
 export function bufferSignature(
