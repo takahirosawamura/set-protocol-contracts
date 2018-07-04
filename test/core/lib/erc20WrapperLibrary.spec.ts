@@ -5,14 +5,14 @@ import * as ABIDecoder from "abi-decoder";
 import { BigNumber } from "bignumber.js";
 
 // Types
-import { Address } from "../../types/common.js";
+import { Address } from "../../../types/common.js";
 
 // Contract types
-// -import { MockTokenInvalidReturnContract } from "../../types/generated/mock_token_invalid_return";
+// import { MockTokenInvalidReturnContract } from "../../types/generated/mock_token_invalid_return";
 // import { MockTokenNoXferReturnContract } from "../../types/generated/mock_token_no_xfer_return";
-import { StandardTokenContract } from "../../types/generated/standard_token";
-import { StandardTokenMockContract } from "../../types/generated/standard_token_mock";
-import { ERC20WrapperLibrary } from "../../types/generated/erc20_wrapper_library";
+import { StandardTokenContract } from "../../../types/generated/standard_token";
+import { StandardTokenMockContract } from "../../../types/generated/standard_token_mock";
+import { ERC20WrapperLibraryContract } from "../../../types/generated/erc20_wrapper_library";
 
 // Artifacts
 const ERC20WrapperLibrary = artifacts.require("ERC20WrapperLibrary");
@@ -33,7 +33,7 @@ import {
   UNLIMITED_ALLOWANCE_IN_BASE_UNITS,
 } from "../../utils/constants";
 
-contract("ERC20Wrapper", (accounts) => {
+contract("ERC20WrapperLibrary", (accounts) => {
   const [
     ownerAccount,
     authorizedAccount,
@@ -43,145 +43,138 @@ contract("ERC20Wrapper", (accounts) => {
   ] = accounts;
 
   let mockToken: StandardTokenMockContract;
-  let transferProxy: TransferProxyContract;
+  let erc20WrapperLibrary: ERC20WrapperLibraryContract;
 
-  const coreWrapper = new CoreWrapper(ownerAccount, ownerAccount);
   const erc20Wrapper = new ERC20Wrapper(ownerAccount);
 
   before(async () => {
-    ABIDecoder.addABI(TransferProxy.abi);
+    ABIDecoder.addABI(ERC20WrapperLibrary.abi);
   });
 
   after(async () => {
-    ABIDecoder.removeABI(TransferProxy.abi);
+    ABIDecoder.removeABI(ERC20WrapperLibrary.abi);
   });
 
-  describe("#approve", async () => {
+  describe.only("#approve", async () => {
     // Setup
     let approver: Address = ownerAccount;
-    let authorizedContract: Address = authorizedAccount;
-    let subjectCaller: Address = ownerAccount;
-    let amountToTransfer: BigNumber = DEPLOYED_TOKEN_QUANTITY;
+    let spender: Address = authorizedAccount;
+    let amountToApprove: BigNumber = UNLIMITED_ALLOWANCE_IN_BASE_UNITS;
     let tokenAddress: Address;
 
     beforeEach(async () => {
-      transferProxy = await coreWrapper.deployTransferProxyAsync(vaultAccount);
-      await coreWrapper.addAuthorizationAsync(transferProxy, authorizedContract);
       mockToken = await erc20Wrapper.deployTokenAsync(ownerAccount);
-      await erc20Wrapper.approveTransferAsync(mockToken, transferProxy.address, approver);
-    });
 
-    afterEach(async () => {
-      approver = ownerAccount;
-      authorizedContract = authorizedAccount;
-      subjectCaller = ownerAccount;
-      amountToTransfer = DEPLOYED_TOKEN_QUANTITY;
+      erc20WrapperLibrary = await erc20Wrapper.deployERC20WrapperLibraryAsync();
+
+      tokenAddress = mockToken.address;
     });
 
     async function subject(): Promise<string> {
-      // Initialize tokenToTransfer to deployed token's address unless tokenAddress is overwritten in test cases
-      const tokenToTransfer = tokenAddress || mockToken.address;
-
-      return transferProxy.transferToVault.sendTransactionAsync(
-        subjectCaller,
-        tokenToTransfer,
-        amountToTransfer,
-        { from: authorizedContract },
+      return erc20WrapperLibrary.approve.sendTransactionAsync(
+        tokenAddress,
+        spender,
+        amountToApprove,
+        { from: approver },
       );
     }
 
-    it("should decrement the balance of the user", async () => {
-      await subject();
+    it("should increase the spender's allowance", async () => {
+      const result = await subject();
 
-      assertTokenBalance(mockToken, new BigNumber(0), ownerAccount);
+      // console.log(result);
+
+      expect(1).to.equal(1);
+
+      // const allowance = await erc20WrapperLibrary.allowance.callAsync(
+      //   tokenAddress,
+      //   approver,
+      //   spender,
+      // );
+
+      // expect(allowance).to.bignumber.equal(amountToApprove);
     });
 
-    it("should increment the balance of the vault", async () => {
-      await subject();
+    // describe("when the owner of the token is not the user", async () => {
+    //   beforeEach(async () => {
+    //     subjectCaller = otherAccount;
+    //   });
 
-      assertTokenBalance(mockToken, amountToTransfer, vaultAccount);
-    });
+    //   it("should revert", async () => {
+    //     await expectRevertError(subject());
+    //   });
+    // });
 
-    describe("when the owner of the token is not the user", async () => {
-      beforeEach(async () => {
-        subjectCaller = otherAccount;
-      });
+    // describe("when the caller is not authorized", async () => {
+    //   beforeEach(async () => {
+    //     authorizedContract = unauthorizedAccount;
+    //   });
 
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
+    //   it("should revert", async () => {
+    //     await expectRevertError(subject());
+    //   });
+    // });
 
-    describe("when the caller is not authorized", async () => {
-      beforeEach(async () => {
-        authorizedContract = unauthorizedAccount;
-      });
+    // describe("when the token is not approved for transfer", async () => {
+    //   before(async () => {
+    //     approver = otherAccount;
+    //   });
 
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
+    //   it("should revert", async () => {
+    //     await expectRevertError(subject());
+    //   });
+    // });
 
-    describe("when the token is not approved for transfer", async () => {
-      before(async () => {
-        approver = otherAccount;
-      });
+    // describe("when the token has a transfer fee", async () => {
+    //   let mockTokenWithFee: StandardTokenWithFeeMockContract;
 
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
+    //   beforeEach(async () => {
+    //     mockTokenWithFee = await erc20Wrapper.deployTokenWithFeeAsync(ownerAccount);
+    //     tokenAddress = mockTokenWithFee.address;
 
-    describe("when the token has a transfer fee", async () => {
-      let mockTokenWithFee: StandardTokenWithFeeMockContract;
+    //     await erc20Wrapper.approveTransferAsync(mockTokenWithFee, transferProxy.address, ownerAccount);
+    //   });
 
-      beforeEach(async () => {
-        mockTokenWithFee = await erc20Wrapper.deployTokenWithFeeAsync(ownerAccount);
-        tokenAddress = mockTokenWithFee.address;
+    //   it("should revert", async () => {
+    //     await expectRevertError(subject());
+    //   });
+    // });
 
-        await erc20Wrapper.approveTransferAsync(mockTokenWithFee, transferProxy.address, ownerAccount);
-      });
+    // describe("when the token doesn't return a value on transfer", async () => {
+    //   let mockTokenNoXferReturn: MockTokenNoXferReturnContract;
 
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
+    //   beforeEach(async () => {
+    //     mockTokenNoXferReturn = await erc20Wrapper.deployTokenNoXferReturnAsync(ownerAccount);
+    //     tokenAddress = mockTokenNoXferReturn.address;
 
-    describe("when the token doesn't return a value on transfer", async () => {
-      let mockTokenNoXferReturn: MockTokenNoXferReturnContract;
+    //     await mockTokenNoXferReturn.approve.sendTransactionAsync(
+    //       transferProxy.address,
+    //       UNLIMITED_ALLOWANCE_IN_BASE_UNITS,
+    //       { from: ownerAccount },
+    //     )
+    //   });
 
-      beforeEach(async () => {
-        mockTokenNoXferReturn = await erc20Wrapper.deployTokenNoXferReturnAsync(ownerAccount);
-        tokenAddress = mockTokenNoXferReturn.address;
+    //   it("should still work", async () => {
+    //     await subject();
 
-        await mockTokenNoXferReturn.approve.sendTransactionAsync(
-          transferProxy.address,
-          UNLIMITED_ALLOWANCE_IN_BASE_UNITS,
-          { from: ownerAccount },
-        )
-      });
+    //     const tokenBalance = await mockTokenNoXferReturn.balanceOf.callAsync(vaultAccount);
+    //     await expect(tokenBalance).to.be.bignumber.equal(amountToTransfer);
+    //   });
+    // });
 
-      it("should still work", async () => {
-        await subject();
+    // describe("when the token returns an invalid value", async () => {
+    //   let mockTokenInvalidReturn: MockTokenInvalidReturnContract;
 
-        const tokenBalance = await mockTokenNoXferReturn.balanceOf.callAsync(vaultAccount);
-        await expect(tokenBalance).to.be.bignumber.equal(amountToTransfer);
-      });
-    });
+    //   beforeEach(async () => {
+    //     mockTokenInvalidReturn = await erc20Wrapper.deployTokenInvalidReturnAsync(ownerAccount);
+    //     tokenAddress = mockTokenInvalidReturn.address;
 
-    describe("when the token returns an invalid value", async () => {
-      let mockTokenInvalidReturn: MockTokenInvalidReturnContract;
+    //     await erc20Wrapper.approveInvalidTransferAsync(mockTokenInvalidReturn, transferProxy.address, ownerAccount);
+    //   });
 
-      beforeEach(async () => {
-        mockTokenInvalidReturn = await erc20Wrapper.deployTokenInvalidReturnAsync(ownerAccount);
-        tokenAddress = mockTokenInvalidReturn.address;
-
-        await erc20Wrapper.approveInvalidTransferAsync(mockTokenInvalidReturn, transferProxy.address, ownerAccount);
-      });
-
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
+    //   it("should revert", async () => {
+    //     await expectRevertError(subject());
+    //   });
+    // });
   });
 });

@@ -6,6 +6,7 @@ import { MockTokenNoXferReturnContract } from "../../types/generated/mock_token_
 import { StandardTokenMockContract } from "../../types/generated/standard_token_mock";
 import { StandardTokenWithFeeMockContract } from "../../types/generated/standard_token_with_fee_mock";
 import { NoDecimalTokenMockContract } from "../../types/generated/no_decimal_token_mock";
+import { ERC20WrapperLibraryContract } from "../../types/generated/erc20_wrapper_library";
 
 import { BigNumber } from "bignumber.js";
 import { Address } from "../../types/common.js";
@@ -22,6 +23,7 @@ const MockTokenNoXferReturn = artifacts.require("MockTokenNoXferReturn");
 const StandardTokenMock = artifacts.require("StandardTokenMock");
 const StandardTokenWithFeeMock = artifacts.require("StandardTokenWithFeeMock");
 const NoDecimalTokenMock = artifacts.require("NoDecimalTokenMock");
+const ERC20WrapperLibrary = artifacts.require("ERC20WrapperLibrary");
 
 
 export class ERC20Wrapper {
@@ -131,6 +133,18 @@ export class ERC20Wrapper {
 
     return new MockTokenInvalidReturnContract(
       web3.eth.contract(truffleMockTokenInvalidReturn.abi).at(truffleMockTokenInvalidReturn.address),
+      { from: this._senderAccountAddress },
+    );
+  }
+
+  public async deployERC20WrapperLibraryAsync()
+    : Promise<ERC20WrapperLibraryContract> {
+    const truffleMockERC20WrapperLibrary = await ERC20WrapperLibrary.new(
+      { from: this._senderAccountAddress, gas: DEFAULT_GAS },
+    );
+
+    return new ERC20WrapperLibraryContract(
+      web3.eth.contract(truffleMockERC20WrapperLibrary.abi).at(truffleMockERC20WrapperLibrary.address),
       { from: this._senderAccountAddress },
     );
   }

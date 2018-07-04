@@ -24,8 +24,7 @@ contract ERC20WrapperLibrary {
     )
         external
     {
-        return ERC20Wrapper.approve(_tokenAddress, _spender, _quantity);
+        ERC20Wrapper.approve(_tokenAddress, _spender, _quantity);
     }
-
 }
 
