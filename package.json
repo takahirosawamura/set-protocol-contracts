@@ -26,7 +26,7 @@
     "test": "yarn prepare-test && truffle test `find ./transpiled/test -name '*.spec.js'`",
     "transpile": "tsc",
     "generate-typings": "abi-gen --abis './build/contracts/*.json' --out './types/generated' --template './types/contract_templates/contract.mustache' --partials './types/contract_templates/partials/*.mustache' && yarn run rename-generated-abi",
-    "rename-generated-abi": "mv types/generated/detailed_e_r_c20.ts types/generated/detailed_erc20.ts && mv types/generated/e_r_c20_basic.ts types/generated/erc20_basic.ts",
+    "rename-generated-abi": "mv types/generated/detailed_e_r_c20.ts types/generated/detailed_erc20.ts && mv types/generated/e_r_c20_basic.ts types/generated/erc20_basic.ts && mv types/generated/e_r_c20_wrapper.ts types/generated/erc20_wrapper.ts && mv types/generated/e_r_c20_wrapper_library.ts types/generated/erc20_wrapper_library.ts",
     "lint-ts": "tslint --fix test/*.ts",
     "lint-sol": "solium -d contracts/",
     "lint": "yarn run lint-sol && yarn run lint-ts",

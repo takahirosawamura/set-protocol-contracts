@@ -57,7 +57,7 @@ library ERC20Wrapper {
         view
         returns (uint256)
     {
-        return IERC20(_tokenAddress).allowance(_ownerAddress, _spender);
+        return IERC20(_tokenAddress).allowance(_tokenOwner, _spender);
     }
 
     function transfer(
