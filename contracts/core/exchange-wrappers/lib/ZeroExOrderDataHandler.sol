@@ -41,11 +41,6 @@ library ZeroExOrderDataHandler {
         uint256 takerAssetDataLength;
     }
 
-    struct AssetDataAddresses {
-        address makerTokenAddress;
-        address takerTokenAddress;
-    }
-
     // ============ Internal Functions ============
 
     // We construct the following to allow calling fillOrder on ZeroEx V2 Exchange
@@ -87,7 +82,7 @@ library ZeroExOrderDataHandler {
         return header;
     }
 
-    function parseFillAmount(bytes _orderData)
+    function parseTakerAssetFillAmount(bytes _orderData)
         internal
         pure
         returns (uint256)

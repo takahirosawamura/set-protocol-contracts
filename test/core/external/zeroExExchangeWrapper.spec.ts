@@ -11,9 +11,16 @@ import { ZeroExSignature, ZeroExOrderHeader, ZeroExOrder } from "../../../types/
 
 // Contract types
 import { ZeroExExchangeWrapperContract } from "../../../types/generated/zero_ex_exchange_wrapper";
+import { CoreContract } from "../../../types/generated/core";
+import { VaultContract } from "../../../types/generated/vault";
+import { TransferProxyContract } from "../../../types/generated/transfer_proxy";
 
 // Artifacts
 const ZeroExExchangeWrapper = artifacts.require("ZeroExExchangeWrapper");
+
+// Core wrapper
+import { CoreWrapper } from "../../utils/coreWrapper";
+import { ERC20Wrapper } from "../../utils/erc20Wrapper";
 
 import {
   createZeroExOrder,
@@ -34,7 +41,29 @@ contract("ZeroExExchangeWrapper", (accounts) => {
   const [ownerAccount, takerAddress, feeRecipientAddress, senderAddress] = accounts;
   let zeroExExchangeWrapper: ZeroExExchangeWrapperContract;
 
+  let core: CoreContract;
+  let vault: VaultContract;
+  let transferProxy: TransferProxyContract;
+
+  const coreWrapper = new CoreWrapper(ownerAccount, ownerAccount);
+  const erc20Wrapper = new ERC20Wrapper(ownerAccount);
+
+
   beforeEach(async () => {
+    core = await coreWrapper.deployCoreAsync();
+    transferProxy = await coreWrapper.deployTransferProxyAsync(vault.address);
+    await coreWrapper.addAuthorizationAsync(vault, core.address);
+    await coreWrapper.addAuthorizationAsync(transferProxy, core.address);
+    
+
+
+
+    // Deploy a Zero Ex Exchange Mock or the whole shebang?
+
+    // Deploy a Zero Ex ERC20 Asset Proxy
+
+
+
     const zeroExExchangeWrapperInstance = await ZeroExExchangeWrapper.new(
       { from: ownerAccount, gas: DEFAULT_GAS },
     );

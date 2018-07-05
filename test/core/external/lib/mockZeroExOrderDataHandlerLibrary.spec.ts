@@ -127,7 +127,7 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
     });
   });
 
-  describe("#parseFillAmount", async () => {
+  describe("#parseTakerAssetFillAmount", async () => {
     let subjectOrderData: Bytes32;
 
     beforeEach(async () => {
@@ -139,7 +139,7 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
     });
 
     async function subject(): Promise<any> {
-      return zeroExExchangeWrapper.parseFillAmount.callAsync(subjectOrderData);
+      return zeroExExchangeWrapper.parseTakerAssetFillAmount.callAsync(subjectOrderData);
     }
 
     it("correctly parse the fill amount", async () => {

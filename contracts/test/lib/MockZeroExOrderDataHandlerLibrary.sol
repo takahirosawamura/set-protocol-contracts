@@ -24,12 +24,12 @@ contract MockZeroExOrderDataHandlerLibrary {
         ];
     }
 
-    function parseFillAmount(bytes _orderData)
+    function parseTakerAssetFillAmount(bytes _orderData)
         public
         pure
         returns (uint256)
     {
-        return ZeroExOrderDataHandler.parseFillAmount(_orderData);
+        return ZeroExOrderDataHandler.parseTakerAssetFillAmount(_orderData);
     }
 
     function parseSignature(bytes _orderData)

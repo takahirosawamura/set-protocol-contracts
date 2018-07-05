@@ -113,7 +113,7 @@ library ERC20Wrapper {
         address _spender,
         uint256 _quantity
     )
-        private
+        internal
     {
         if (allowance(_token, _owner, _spender) < _quantity) {
             approve(
