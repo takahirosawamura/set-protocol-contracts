@@ -49,7 +49,7 @@ export function generateStandardZeroExOrderBytesArray(
     zeroExOrder: ZeroExOrder,
     signature: ZeroExSignature,
     fillAmount: UInt,
-) {
+): Bytes {
   const { makerAssetData, takerAssetData } = zeroExOrder;
 
   const makerAssetDataLength = getNumBytesFromHex(makerAssetData);
@@ -141,7 +141,7 @@ function bufferSignature(
 
 function bufferArrayToHex(
   bufferArr: Buffer[]
-): Bytes32 {
+): Bytes {
     const buffer = Buffer.concat(bufferArr);
     return ethUtil.bufferToHex(buffer);
 }

@@ -39,7 +39,6 @@ import {
 } from "../utils/tokenAssertions";
 import {
   DEPLOYED_TOKEN_QUANTITY,
-  UNLIMITED_ALLOWANCE_IN_BASE_UNITS,
 } from "../utils/constants";
 
 contract("Authorizable", (accounts) => {

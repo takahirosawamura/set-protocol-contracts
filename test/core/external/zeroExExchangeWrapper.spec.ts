@@ -5,6 +5,8 @@ import * as ethUtil from "ethereumjs-util";
 import * as ABIDecoder from "abi-decoder";
 import { BigNumber } from "bignumber.js";
 
+import { ether } from "../../utils/units";
+
 // Types
 import { Address, Bytes32, Log, UInt } from "../../../types/common.js";
 import { ZeroExSignature, ZeroExOrderHeader, ZeroExOrder } from "../../../types/zeroEx";
@@ -25,10 +27,15 @@ import { ERC20Wrapper } from "../../utils/erc20Wrapper";
 
 // https://blog.0xproject.com/0x-v2-deployed-on-kovan-first-audit-begins-404567b27742
 // To test, we use a number of deployed 0x from a snapshot
-import { ZERO_EX_ADDRESSES } from "../../utils/constants";
+import { ZERO_EX_ADDRESSES, NULL_ADDRESS } from "../../utils/constants";
 
 import {
+  bufferZeroExOrder,
   createZeroExOrder,
+  getZeroExOrderLengthFromBuffer,
+  generateStandardZeroExOrderBytesArray,
+  generateERC20TokenAssetData,
+  getNumBytesFromHex,
 } from "../../utils/zeroExExchangeWrapper";
 
 // Testing Set up
@@ -40,6 +47,8 @@ const { expect, assert } = chai;
 
 import {
   DEFAULT_GAS,
+  ZERO,
+  MAX_UINT256,
 } from "../../utils/constants";
  
 contract("ZeroExExchangeWrapper", (accounts) => {
@@ -81,6 +90,30 @@ contract("ZeroExExchangeWrapper", (accounts) => {
   describe("#exchange", async () => {
     let orderData: any;
 
+    beforeEach(async () => {
+      // Create a 0x order and assign to orderData
+      const zeroExOrder = createZeroExOrder(
+        ownerAccount,
+        NULL_ADDRESS,
+        NULL_ADDRESS,
+        NULL_ADDRESS,
+        ether(1),
+        ether(1),
+        ZERO,
+        ZERO,
+        MAX_UINT256,
+        ZERO,
+        'abc', // TODO
+        'xyz', // TODO
+      );
+
+      // Sign the order and generate signature
+      // Encode the signature
+
+      // Decide on a fill Amount
+
+    });
+
     async function subject(): Promise<string> {
       return zeroExExchangeWrapper.exchange.sendTransactionAsync(
         ownerAccount,
@@ -90,6 +123,10 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     }
 
     it("should approve allowance of the 0x proxy if not sufficient", async () => {
+      
+
+      await subject();
+
       // Check the allowance of the maker token to the zeroEx proxy
     });
 
