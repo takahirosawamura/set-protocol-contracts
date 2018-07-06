@@ -74,6 +74,7 @@ contract("ZeroExExchangeWrapper", (accounts) => {
 
   beforeEach(async () => {
     core = await coreWrapper.deployCoreAsync();
+    vault = await coreWrapper.deployVaultAsync();
     transferProxy = await coreWrapper.deployTransferProxyAsync(vault.address);
     await coreWrapper.addAuthorizationAsync(vault, core.address);
     await coreWrapper.addAuthorizationAsync(transferProxy, core.address);
@@ -94,7 +95,7 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     );
   });
 
-  describe("#exchange", async () => {
+  describe.only("#exchange", async () => {
     let orderData: any;
 
     beforeEach(async () => {

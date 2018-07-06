@@ -60,6 +60,7 @@ export function generateERC20TokenAssetData(
 export function signMessage(message: Buffer, privateKey: Buffer, signatureType: SignatureType): Buffer {
     if (signatureType === SignatureType.EthSign) {
         const prefixedMessage = ethUtil.hashPersonalMessage(message);
+        console.log("privatekey", privateKey.length, privateKey);
         const ecSignature = ethUtil.ecsign(prefixedMessage, privateKey);
         const signature = Buffer.concat([
             ethUtil.toBuffer(ecSignature.v),

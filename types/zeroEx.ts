@@ -25,7 +25,7 @@ export interface ZeroExOrder {
 
 export type ZeroExSignature = string;
 
-export declare enum SignatureType {
+export enum SignatureType {
     Illegal = 0,
     Invalid = 1,
     EIP712 = 2,
