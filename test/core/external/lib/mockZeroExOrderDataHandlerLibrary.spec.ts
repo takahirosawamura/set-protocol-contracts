@@ -17,12 +17,15 @@ const MockZeroExOrderDataHandlerLibrary = artifacts.require("MockZeroExOrderData
 
 import {
   bufferZeroExOrder,
-  createZeroExOrder,
   getZeroExOrderLengthFromBuffer,
   generateStandardZeroExOrderBytesArray,
-  generateERC20TokenAssetData,
   getNumBytesFromHex,
 } from "../../../utils/zeroExExchangeWrapper";
+
+import {
+  createZeroExOrder,
+  generateERC20TokenAssetData
+} from "../../../utils/zeroExOrder";
 
 // Testing Set up
 import { BigNumberSetup } from "../../../config/bigNumberSetup";

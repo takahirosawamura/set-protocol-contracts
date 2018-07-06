@@ -9,7 +9,7 @@ import { ether } from "../../utils/units";
 
 // Types
 import { Address, Bytes32, Log, UInt } from "../../../types/common.js";
-import { ZeroExSignature, ZeroExOrderHeader, ZeroExOrder } from "../../../types/zeroEx";
+import { ZeroExSignature, ZeroExOrderHeader, ZeroExOrder, SignatureType } from "../../../types/zeroEx";
 
 // Contract types
 import { CoreContract } from "../../../types/generated/core";
@@ -27,16 +27,23 @@ import { ERC20Wrapper } from "../../utils/erc20Wrapper";
 
 // https://blog.0xproject.com/0x-v2-deployed-on-kovan-first-audit-begins-404567b27742
 // To test, we use a number of deployed 0x from a snapshot
-import { ZERO_EX_ADDRESSES, NULL_ADDRESS } from "../../utils/constants";
+import { ZERO_EX_ADDRESSES, NULL_ADDRESS, PRIVATE_KEYS } from "../../utils/constants";
+
+const [ownerPrivateKey] = PRIVATE_KEYS;
 
 import {
   bufferZeroExOrder,
-  createZeroExOrder,
   getZeroExOrderLengthFromBuffer,
   generateStandardZeroExOrderBytesArray,
-  generateERC20TokenAssetData,
   getNumBytesFromHex,
 } from "../../utils/zeroExExchangeWrapper";
+
+import {
+  createZeroExOrder,
+  generateERC20TokenAssetData,
+  getOrderHashBuffer,
+  signMessage,
+} from "../../utils/zeroExOrder";
 
 // Testing Set up
 import { BigNumberSetup } from "../../config/bigNumberSetup";
@@ -92,6 +99,35 @@ contract("ZeroExExchangeWrapper", (accounts) => {
 
     beforeEach(async () => {
       // Create a 0x order and assign to orderData
+      const order = {
+        makerAddress: ownerAccount,
+        takerAddress: NULL_ADDRESS,
+        feeRecipientAddress: NULL_ADDRESS,
+        senderAddress: NULL_ADDRESS,
+        makerAssetAmount: ether(1),
+        takerAssetAmount: ether(1),
+        makerFee: ZERO,
+        takerFee: ZERO,
+        expirationTimeSeconds: MAX_UINT256,
+        salt: ZERO,
+        makerAssetData: generateERC20TokenAssetData(makerToken.address),
+        takerAssetData: generateERC20TokenAssetData(takerToken.address),
+        exchangeAddress: ZERO_EX_ADDRESSES.EXCHANGE,
+      };
+
+      // Sign the order and generate signature
+      /**
+        // 2. Sign order
+        const orderHashBuff = orderHashUtils.getOrderHashBuffer(order);
+        const signature = signingUtils.signMessage(orderHashBuff, this.makerPrivateKey, SignatureType.EthSign);
+      **/
+
+      const orderHashBuff = getOrderHashBuffer(order);
+      const privateKey = ethUtil.toBuffer(ownerPrivateKey);
+
+      const signature = signMessage(orderHashBuff, privateKey, SignatureType.EthSign);
+      const signatureHex = `0x${signature.toString('hex')}`;
+
       const zeroExOrder = createZeroExOrder(
         ownerAccount,
         NULL_ADDRESS,
@@ -103,15 +139,18 @@ contract("ZeroExExchangeWrapper", (accounts) => {
         ZERO,
         MAX_UINT256,
         ZERO,
-        'abc', // TODO
-        'xyz', // TODO
+        generateERC20TokenAssetData(makerToken.address),
+        generateERC20TokenAssetData(takerToken.address),
       );
 
-      // Sign the order and generate signature
-      // Encode the signature
-
       // Decide on a fill Amount
+      const fillAmount = ether(1);
 
+      orderData = generateStandardZeroExOrderBytesArray(
+        zeroExOrder,
+        signatureHex,
+        fillAmount,
+      );
     });
 
     async function subject(): Promise<string> {
@@ -123,9 +162,9 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     }
 
     it("should approve allowance of the 0x proxy if not sufficient", async () => {
-      
-
       await subject();
+
+      expect(1).to.equal(1);
 
       // Check the allowance of the maker token to the zeroEx proxy
     });
