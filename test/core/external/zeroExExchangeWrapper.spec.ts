@@ -10,10 +10,11 @@ import { Address, Bytes32, Log, UInt } from "../../../types/common.js";
 import { ZeroExSignature, ZeroExOrderHeader, ZeroExOrder } from "../../../types/zeroEx";
 
 // Contract types
-import { ZeroExExchangeWrapperContract } from "../../../types/generated/zero_ex_exchange_wrapper";
 import { CoreContract } from "../../../types/generated/core";
+import { StandardTokenMockContract } from "../../../types/generated/standard_token_mock";
 import { VaultContract } from "../../../types/generated/vault";
 import { TransferProxyContract } from "../../../types/generated/transfer_proxy";
+import { ZeroExExchangeWrapperContract } from "../../../types/generated/zero_ex_exchange_wrapper";
 
 // Artifacts
 const ZeroExExchangeWrapper = artifacts.require("ZeroExExchangeWrapper");
@@ -21,6 +22,10 @@ const ZeroExExchangeWrapper = artifacts.require("ZeroExExchangeWrapper");
 // Core wrapper
 import { CoreWrapper } from "../../utils/coreWrapper";
 import { ERC20Wrapper } from "../../utils/erc20Wrapper";
+
+// https://blog.0xproject.com/0x-v2-deployed-on-kovan-first-audit-begins-404567b27742
+// To test, we use a number of deployed 0x from a snapshot
+import { ZERO_EX_ADDRESSES } from "../../utils/constants";
 
 import {
   createZeroExOrder,
@@ -38,12 +43,14 @@ import {
 } from "../../utils/constants";
  
 contract("ZeroExExchangeWrapper", (accounts) => {
-  const [ownerAccount, takerAddress, feeRecipientAddress, senderAddress] = accounts;
+  const [ownerAccount, takerAddress, senderAddress] = accounts;
+  
   let zeroExExchangeWrapper: ZeroExExchangeWrapperContract;
-
   let core: CoreContract;
   let vault: VaultContract;
   let transferProxy: TransferProxyContract;
+  let makerToken: StandardTokenMockContract;
+  let takerToken: StandardTokenMockContract;
 
   const coreWrapper = new CoreWrapper(ownerAccount, ownerAccount);
   const erc20Wrapper = new ERC20Wrapper(ownerAccount);
@@ -54,17 +61,14 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     transferProxy = await coreWrapper.deployTransferProxyAsync(vault.address);
     await coreWrapper.addAuthorizationAsync(vault, core.address);
     await coreWrapper.addAuthorizationAsync(transferProxy, core.address);
-    
 
-
-
-    // Deploy a Zero Ex Exchange Mock or the whole shebang?
-
-    // Deploy a Zero Ex ERC20 Asset Proxy
-
-
+    makerToken = await erc20Wrapper.deployTokenAsync(ownerAccount);
+    takerToken = await erc20Wrapper.deployTokenAsync(takerAddress);
 
     const zeroExExchangeWrapperInstance = await ZeroExExchangeWrapper.new(
+      ZERO_EX_ADDRESSES.EXCHANGE,
+      ZERO_EX_ADDRESSES.ERC20_PROXY,
+      transferProxy.address,
       { from: ownerAccount, gas: DEFAULT_GAS },
     );
 
@@ -75,7 +79,19 @@ contract("ZeroExExchangeWrapper", (accounts) => {
   });
 
   describe("#exchange", async () => {
-    // Deploy a mock 0x exchange
-    // Deploy a mock 0x proxy
+    let orderData: any;
+
+    async function subject(): Promise<string> {
+      return zeroExExchangeWrapper.exchange.sendTransactionAsync(
+        ownerAccount,
+        orderData,
+        { from: ownerAccount },
+      );
+    }
+
+    it("should approve allowance of the 0x proxy if not sufficient", async () => {
+      // Check the allowance of the maker token to the zeroEx proxy
+    });
+
   });
 });

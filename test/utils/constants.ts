@@ -40,3 +40,18 @@ export const PRIVATE_KEYS = [
   "0a44845c2b09e9f942578f7dd960653595c152e558dbf7fb40bd85e918dd565f",
   "843445407853ed9455b0b3511b50dc11a5c329746abbed08c95582b895c450a9",
 ]
+
+// https://blog.0xproject.com/0x-v2-deployed-on-kovan-first-audit-begins-404567b27742
+// To test, we use a number of deployed 0x from a snapshot
+/**
+    Exchange: 0x48bacb9266a570d521063ef5dd96e61686dbe788
+    ERC20Proxy: 0x1dc4c1cefef38a777b15aa20260a54e584b16c48
+    ERC721Proxy: 0x1d7022f5b17d2f8b695918fb48fa1089c9f85401
+    ZRXToken: 0x871dd7c2b4b25e1aa18728e9d5f2af4c4e431f5c
+    AssetProxyOwner: 0x34d402f14d58e001d8efbe6585051bf9706aa064
+    WETH9: 0x0b1ba0af832d7c05fd64161e0db78e85978e8082
+**/
+export const ZERO_EX_ADDRESSES = {
+  EXCHANGE: "0x48bacb9266a570d521063ef5dd96e61686dbe788",
+  ERC20_PROXY: "0x1dc4c1cefef38a777b15aa20260a54e584b16c48",
+}

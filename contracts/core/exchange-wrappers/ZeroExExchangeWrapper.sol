@@ -88,7 +88,7 @@ contract ZeroExExchangeWrapper
         bytes _zeroExOrderData
     )
         private
-        returns (ZeroExFillResults.FillResults memory)
+        // returns (ZeroExFillResults.FillResults memory)
     {
         uint256 takerAssetFillAmount = OrderHandler.parseTakerAssetFillAmount(_zeroExOrderData);
         bytes memory signature = OrderHandler.sliceSignature(_zeroExOrderData);
@@ -104,25 +104,25 @@ contract ZeroExExchangeWrapper
             order.makerAssetAmount
         );
 
-        ZeroExFillResults.FillResults memory fillResults = 
-            ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(
-                order,
-                takerAssetFillAmount,
-                signature
-            );
+        // ZeroExFillResults.FillResults memory fillResults = 
+        //     ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(
+        //         order,
+        //         takerAssetFillAmount,
+        //         signature
+        //     );
 
-        // Taker Asset must be filled completely
-        require(fillResults.takerAssetFilledAmount == takerAssetFillAmount);
+        // // Taker Asset must be filled completely
+        // require(fillResults.takerAssetFilledAmount == takerAssetFillAmount);
 
-        // Ensure the taker token is allowed to be approved to the TransferProxy
-        address takerToken = OrderHandler.parseERC20TokenAddress(order.takerAssetData);
-        ERC20.ensureAllowance(
-            takerToken,
-            address(this),
-            ZERO_EX_PROXY,
-            order.takerAssetAmount
-        );
+        // // Ensure the taker token is allowed to be approved to the TransferProxy
+        // address takerToken = OrderHandler.parseERC20TokenAddress(order.takerAssetData);
+        // ERC20.ensureAllowance(
+        //     takerToken,
+        //     address(this),
+        //     ZERO_EX_PROXY,
+        //     order.takerAssetAmount
+        // );
 
-        return fillResults;
+        // return fillResults;
     }
 }
