@@ -58,5 +58,5 @@ interface IERC20 {
         uint256 _quantity
     )
         external
-        returns (address);
+        returns (bool);
 }
