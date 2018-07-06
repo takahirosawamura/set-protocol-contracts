@@ -19,7 +19,6 @@ import {
   bufferZeroExOrder,
   getZeroExOrderLengthFromBuffer,
   generateStandardZeroExOrderBytesArray,
-  getNumBytesFromHex,
 } from "../../../utils/zeroExExchangeWrapper";
 
 import {
@@ -112,8 +111,8 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
       zeroExOrderLength = getZeroExOrderLengthFromBuffer(zeroExOrderBuffer);
 
       signatureLength = new BigNumber(signature.length);
-      makerAssetDataLength = getNumBytesFromHex(makerAssetData);
-      takerAssetDataLength = getNumBytesFromHex(takerAssetData);
+      makerAssetDataLength = new BigNumber(makerAssetData.length);
+      takerAssetDataLength = new BigNumber(takerAssetData.length);
     });
 
     async function subject(): Promise<any> {
@@ -210,8 +209,8 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
       expect(takerFee).to.be.bignumber.equal(takerFeeResult);
       expect(expirationTimeSeconds).to.be.bignumber.equal(expirationResult);
       expect(salt).to.be.bignumber.equal(saltResult);
-      expect(makerAssetData).to.equal(makerAssetDataResult);
-      expect(takerAssetData).to.equal(takerAssetDataResult);
+      expect(makerAssetData).to.equal(web3.toAscii(makerAssetDataResult));
+      expect(takerAssetData).to.equal(web3.toAscii(takerAssetDataResult));
     });
   });
 
@@ -219,7 +218,7 @@ contract("MockZeroExOrderDataHandlerLibrary", (accounts) => {
     let subjectOrderData: Bytes32;
 
     beforeEach(async () => {
-      subjectOrderData = makerAssetData;
+      subjectOrderData = `0x${makerAssetData}`;
     });
 
     async function subject(): Promise<any> {

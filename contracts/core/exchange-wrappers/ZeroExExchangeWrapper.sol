@@ -89,6 +89,8 @@ contract ZeroExExchangeWrapper
     )
         private
         // returns (ZeroExFillResults.FillResults memory)
+        // returns (ZeroExOrder.Order memory)
+        returns (bytes)
     {
         uint256 takerAssetFillAmount = OrderHandler.parseTakerAssetFillAmount(_zeroExOrderData);
         bytes memory signature = OrderHandler.sliceSignature(_zeroExOrderData);
@@ -97,12 +99,12 @@ contract ZeroExExchangeWrapper
         address makerToken = OrderHandler.parseERC20TokenAddress(order.makerAssetData);
 
         // Ensure the maker token is allowed to be approved to the ZeroEx proxy
-        ERC20.ensureAllowance(
-            makerToken,
-            address(this),
-            ZERO_EX_PROXY,
-            order.makerAssetAmount
-        );
+        // ERC20.ensureAllowance(
+        //     makerToken,
+        //     address(this),
+        //     ZERO_EX_PROXY,
+        //     order.makerAssetAmount
+        // );
 
         // ZeroExFillResults.FillResults memory fillResults = 
         //     ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(

@@ -46,11 +46,11 @@ export function generateERC20TokenAssetData(
 ): string {
   // The ERC20 asset data is always prefixed with 0xf47261b0
   // bytes4 ERC20_SELECTOR = bytes4(keccak256("ERC20Token(address)"));
-  const erc20AssetSelector = "0xf47261b0";
+  const erc20AssetSelector = "f47261b0";
 
   // Remove hex prefix and left pad to 32 bytes
   const moddedTokenAddress = tokenAddress.slice(2).padStart(64, "0");
-  return erc20AssetSelector.concat(moddedTokenAddress);
+  return `0x${erc20AssetSelector.concat(moddedTokenAddress)}`;
 }
 
 
@@ -60,7 +60,6 @@ export function generateERC20TokenAssetData(
 export function signMessage(message: Buffer, privateKey: Buffer, signatureType: SignatureType): Buffer {
     if (signatureType === SignatureType.EthSign) {
         const prefixedMessage = ethUtil.hashPersonalMessage(message);
-        console.log("privatekey", privateKey.length, privateKey);
         const ecSignature = ethUtil.ecsign(prefixedMessage, privateKey);
         const signature = Buffer.concat([
             ethUtil.toBuffer(ecSignature.v),

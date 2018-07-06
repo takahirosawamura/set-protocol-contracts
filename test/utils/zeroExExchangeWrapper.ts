@@ -11,10 +11,6 @@ function bufferAndLPad32(input: any): Buffer {
   return ethUtil.setLengthLeft(ethUtil.toBuffer(input), 32);
 }
 
-export function getNumBytesFromHex(hexString: string): BigNumber {
-  return new BigNumber(hexString.length).minus(2).div(2)
-}
-
 export function generateStandardZeroExOrderBytesArray(
     zeroExOrder: ZeroExOrder,
     signature: ZeroExSignature,
@@ -22,8 +18,8 @@ export function generateStandardZeroExOrderBytesArray(
 ): Bytes {
   const { makerAssetData, takerAssetData } = zeroExOrder;
 
-  const makerAssetDataLength = getNumBytesFromHex(makerAssetData);
-  const takerAssetDataLength = getNumBytesFromHex(makerAssetData);
+  const makerAssetDataLength = makerAssetData.slice(2).length / 2;
+  const takerAssetDataLength = takerAssetData.slice(2).length / 2;
 
   // Get signature length
   const signatureLength: UInt = new BigNumber(signature.length);
@@ -66,8 +62,10 @@ export function bufferZeroExOrder(
       bufferAndLPad32(web3.toHex(order.takerFee)),
       bufferAndLPad32(web3.toHex(order.expirationTimeSeconds)),
       bufferAndLPad32(web3.toHex(order.salt)),
-      ethUtil.toBuffer(order.makerAssetData),
-      ethUtil.toBuffer(order.takerAssetData),
+      // For some reason, the ETH Utils function buffers things incorrectly
+      // So we use a native JS buffer
+      Buffer.from(order.makerAssetData.slice(2), 'hex'),
+      Buffer.from(order.takerAssetData.slice(2), 'hex')
   ];
 }
 
@@ -97,7 +95,7 @@ function bufferSignature(
     return [ethUtil.toBuffer(signature)];
 }
 
-function bufferArrayToHex(
+export function bufferArrayToHex(
   bufferArr: Buffer[]
 ): Bytes {
     const buffer = Buffer.concat(bufferArr);

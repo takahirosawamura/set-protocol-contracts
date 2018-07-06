@@ -35,7 +35,6 @@ import {
   bufferZeroExOrder,
   getZeroExOrderLengthFromBuffer,
   generateStandardZeroExOrderBytesArray,
-  getNumBytesFromHex,
 } from "../../utils/zeroExExchangeWrapper";
 
 import {
@@ -126,10 +125,10 @@ contract("ZeroExExchangeWrapper", (accounts) => {
       const orderHashBuff = getOrderHashBuffer(order);
       const privateKey = ethUtil.toBuffer(ownerPrivateKey);
 
-      const signature = signMessage(orderHashBuff, privateKey, SignatureType.EthSign);
-      const signatureHex = `0x${signature.toString('hex')}`;
+      const signatureBuff = signMessage(orderHashBuff, privateKey, SignatureType.EthSign);
+      const signature = signatureBuff.toString('hex');
 
-      const zeroExOrder = createZeroExOrder(
+      const zeroExOrder: ZeroExOrder = createZeroExOrder(
         ownerAccount,
         NULL_ADDRESS,
         NULL_ADDRESS,
@@ -149,13 +148,13 @@ contract("ZeroExExchangeWrapper", (accounts) => {
 
       orderData = generateStandardZeroExOrderBytesArray(
         zeroExOrder,
-        signatureHex,
+        signature,
         fillAmount,
       );
     });
 
-    async function subject(): Promise<string> {
-      return zeroExExchangeWrapper.exchange.sendTransactionAsync(
+    async function subject(): Promise<any> {
+      return zeroExExchangeWrapper.exchange.callAsync(
         ownerAccount,
         orderData,
         { from: ownerAccount },
@@ -163,7 +162,7 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     }
 
     it("should approve allowance of the 0x proxy if not sufficient", async () => {
-      await subject();
+      const result = await subject();
 
       expect(1).to.equal(1);
 
