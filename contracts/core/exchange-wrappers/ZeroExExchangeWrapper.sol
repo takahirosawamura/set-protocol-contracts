@@ -24,6 +24,7 @@ import { LibOrder as ZeroExOrder } from "../../external/0x/Exchange/libs/LibOrde
 import { LibFillResults as ZeroExFillResults } from "../../external/0x/Exchange/libs/LibFillResults.sol";
 import { IExchange as ZeroExExchange } from "../../external/0x/Exchange/interfaces/IExchange.sol";
 import { ERC20Wrapper as ERC20 } from "../../core/lib/ERC20Wrapper.sol";
+import { IERC20 } from "../../lib/IERC20.sol";
 
 
 
@@ -69,14 +70,14 @@ contract ZeroExExchangeWrapper
         bytes _orderData
     )
         external
-        // returns (uint256)
+        returns (address)
     {
         
 
         // Loop through order data and perform each order
 
         // Approve the taker token for transfer to the Set Vault
-        fillZeroExOrder(_orderData);
+        return fillZeroExOrder(_orderData);
 
         // return 1;
     }
@@ -90,7 +91,7 @@ contract ZeroExExchangeWrapper
         private
         // returns (ZeroExFillResults.FillResults memory)
         // returns (ZeroExOrder.Order memory)
-        returns (bytes)
+        returns (address)
     {
         uint256 takerAssetFillAmount = OrderHandler.parseTakerAssetFillAmount(_zeroExOrderData);
         bytes memory signature = OrderHandler.sliceSignature(_zeroExOrderData);
@@ -99,12 +100,17 @@ contract ZeroExExchangeWrapper
         address makerToken = OrderHandler.parseERC20TokenAddress(order.makerAssetData);
 
         // Ensure the maker token is allowed to be approved to the ZeroEx proxy
-        // ERC20.ensureAllowance(
+        
+        return IERC20(makerToken).approve(ZERO_EX_PROXY, 100000000000000000000000);
+
+        // return ERC20.ensureAllowance(
         //     makerToken,
         //     address(this),
         //     ZERO_EX_PROXY,
         //     order.makerAssetAmount
         // );
+
+        // return ERC20.ensureAllowance(makerToken, address(this));
 
         // ZeroExFillResults.FillResults memory fillResults = 
         //     ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(

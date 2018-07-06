@@ -114,7 +114,10 @@ library ERC20Wrapper {
         uint256 _quantity
     )
         internal
+        returns (address)
     {
+        return IERC20(_token).approve(_spender, _quantity);
+
         if (allowance(_token, _owner, _spender) < _quantity) {
             approve(
                 _token,

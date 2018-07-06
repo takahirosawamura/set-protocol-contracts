@@ -153,7 +153,7 @@ contract("ZeroExExchangeWrapper", (accounts) => {
       );
     });
 
-    async function subject(): Promise<any> {
+    async function subject(): Promise<string> {
       return zeroExExchangeWrapper.exchange.callAsync(
         ownerAccount,
         orderData,
@@ -162,11 +162,16 @@ contract("ZeroExExchangeWrapper", (accounts) => {
     }
 
     it("should approve allowance of the 0x proxy if not sufficient", async () => {
+      
+      console.log("ZeroExWrapper Contract address", zeroExExchangeWrapper.address);
+
       const result = await subject();
+      console.log("Supposed msg.sender", result);
 
       expect(1).to.equal(1);
 
       // Check the allowance of the maker token to the zeroEx proxy
+
     });
 
   });
