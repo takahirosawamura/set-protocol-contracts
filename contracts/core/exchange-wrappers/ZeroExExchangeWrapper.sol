@@ -97,22 +97,23 @@ contract ZeroExExchangeWrapper
         bytes memory signature = OrderHandler.sliceSignature(_zeroExOrderData);
         ZeroExOrder.Order memory order = OrderHandler.parseZeroExOrder(_zeroExOrderData);
 
-        address makerToken = OrderHandler.parseERC20TokenAddress(order.makerAssetData);
+        address takerToken = OrderHandler.parseERC20TokenAddress(order.takerAssetData);
 
-        // Ensure the maker token is allowed to be approved to the ZeroEx proxy
+        // Ensure the taker token is allowed to be approved to the ZeroEx proxy
         ERC20.ensureAllowance(
-            makerToken,
+            takerToken,
             address(this),
             ZERO_EX_PROXY,
-            order.makerAssetAmount
+            order.takerAssetAmount
         );
 
-        // ZeroExFillResults.FillResults memory fillResults = 
-        //     ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(
-        //         order,
-        //         takerAssetFillAmount,
-        //         signature
-        //     );
+        ZeroExFillResults.FillResults memory fillResults = 
+            // ZeroExExchange(ZERO_EX_EXCHANGE).fillOrKillOrder(
+            ZeroExExchange(ZERO_EX_EXCHANGE).fillOrder(
+                order,
+                takerAssetFillAmount,
+                signature
+            );
 
         // // Taker Asset must be filled completely
         // require(fillResults.takerAssetFilledAmount == takerAssetFillAmount);

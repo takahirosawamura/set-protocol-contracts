@@ -18,7 +18,7 @@ pragma solidity 0.4.24;
 
 
 /**
- * @title GeneralERC20
+ * @title GeneralERC20x`
  * @author Set Protocol
  *
  * Interface for using ERC20 Tokens. This interface is needed to interact with tokens that are not
