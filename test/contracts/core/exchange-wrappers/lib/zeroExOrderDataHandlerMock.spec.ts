@@ -21,7 +21,11 @@ const ZeroExOrderDataHandlerMock = artifacts.require("ZeroExOrderDataHandlerMock
 import {
   bufferZeroExOrder,
   generateStandardZeroExOrderBytesArray,
-} from "../../../../utils/zeroExExchangeWrapper";
+} from "../../../../utils/zeroExEncoding";
+
+import {
+  EXCHANGE_ADDRESS,
+} from "../../../../utils/zeroExConstants";
 
 import {
   getNumBytesFromHex,
@@ -243,6 +247,23 @@ contract("ZeroExOrderDataHandlerMock", (accounts) => {
       it("should revert", async () => {
         await expectRevertError(subject());
       });
+    });
+  });
+
+  describe.only("#isValidZeroExOrder", async () => {
+    let subjectAssetData: Bytes32;
+
+    beforeEach(async () => {
+      subjectAssetData = makerAssetData;
+    });
+
+    async function subject(): Promise<any> {
+      return zeroExExchangeWrapper.parseERC20TokenAddress.callAsync(subjectAssetData);
+    }
+
+    it("should correctly generate a 0x order signature", async () => {
+      const makerTokenAddressResult = await subject();
+      expect(makerTokenAddressResult).to.equal(makerTokenAddress);
     });
   });
 });
