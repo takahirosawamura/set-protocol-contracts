@@ -33,4 +33,6 @@ contract IExchange is
     ITransactions,
     IAssetProxyDispatcher,
     IWrapperFunctions
-{}
+{
+  bytes32 public EIP712_DOMAIN_SEPARATOR_SCHEMA_HASH;
+}

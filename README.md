@@ -67,13 +67,14 @@ cd abi-gen && yarn link && cd ../
 cd base-contract && yarn link && cd ../
 cd web3-wrapper && yarn link && cd ../
 cd order-utils && yarn link && cd ../
+cd subproviders && yarn link && cd ../
 ```
 
 In this project, install dependencies then link the projects the 0x-monorepo packages from the previous step:
 
 ```
 yarn install
-yarn link "@0xproject/types" "@0xproject/order-utils" "@0xproject/abi-gen" "@0xproject/base-contract" "@0xproject/web3-wrapper" "@0xproject/order-utils"
+yarn link "@0xproject/types" "@0xproject/order-utils" "@0xproject/abi-gen" "@0xproject/base-contract" "@0xproject/web3-wrapper" "@0xproject/order-utils" "@0xproject/subproviders"
 ```
 
 Then, in a separate terminal, run the following command
