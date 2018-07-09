@@ -27,10 +27,6 @@ import {
   EXCHANGE_ADDRESS,
 } from "../../../../utils/zeroExConstants";
 
-import {
-  exchangeContract,
-} from "../../../../utils/zeroEx/contracts";
-
 import { 
   signingUtils,
   mnemonicWallet,
@@ -261,7 +257,7 @@ contract("ZeroExOrderDataHandlerMock", (accounts) => {
     });
   });
 
-  describe.only("#isValidZeroExSignature", async () => {
+  describe("#isValidZeroExSignature", async () => {
     let orderHashHex: Bytes32;
     let signature: Bytes;
     let signerAddress: Address;
@@ -318,13 +314,11 @@ contract("ZeroExOrderDataHandlerMock", (accounts) => {
       console.log("Signer Address", signerAddress);
       console.log("Signature", signature);
 
-      // return zeroExExchangeWrapper.isValidZeroExSignature.callAsync(EXCHANGE_ADDRESS, orderHashHex, signerAddress, signature);
-      return exchangeContract.isValidSignature.callAsync(orderHashHex, signerAddress, signature);
+      return zeroExExchangeWrapper.isValidZeroExSignature.callAsync(EXCHANGE_ADDRESS, orderHashHex, signerAddress, signature);
     }
 
     it("should correctly generate a 0x order signature", async () => {
       const isValidSignature = await subject();
-      console.log("Bytes", isValidSignature);
       expect(isValidSignature).to.be.true;
     });
   });
