@@ -37,6 +37,14 @@ contract ZeroExExchangeWrapper
 {
     using SafeMath for uint256;
 
+    /* ============ Structs ============ */
+
+    struct TakerFillResults {
+        address token;
+        uint256 fillAmount;
+    }
+
+
     /* ============ State Variables ============ */
 
     address public ZERO_EX_EXCHANGE;
@@ -64,27 +72,46 @@ contract ZeroExExchangeWrapper
 
     // The purpose of this function is to decode the order data and execute the trade
     // TODO - We are currently assuming no taker fee. Add in taker fee going forward
+
+    // All orders are prefixed with a header that includes the number of orders
+    //
+    // | Section | Data                  | Offset              | Length          | Contents                      |
+    // |---------|-----------------------|---------------------|-----------------|-------------------------------|
+    // | Header  | numOrders             | 0                   | 32              | Number of orders.             |
     function exchange(
         address _tradeOriginator,
         bytes _orderData
     )
         public
-        returns (bytes)
+        returns (address[], uint256[])
     {
-        uint256 offset = 0;
+        uint256 numOrders = OrderHandler.parseNumOrders(_orderData);
+
+        address[] memory takerTokens = new address[](numOrders);
+        uint256[] memory takerAmounts = new uint256[](numOrders);
+
+        // First 32 bytes are reseved for the number of orders
+        uint256 orderNum = 0;
+        uint256 offset = 32;
         while (offset < _orderData.length) {
-            // Pull the orders length
             bytes memory zeroExOrder = OrderHandler.sliceOrderBody(_orderData, offset);
 
-            fillZeroExOrder(zeroExOrder);
+            TakerFillResults memory takerFillResults = fillZeroExOrder(zeroExOrder);
+
+            // TODO - optimize so that fill results are aggregated
+            // on a per-token basis
+            takerTokens[orderNum] = takerFillResults.token;
+            takerAmounts[orderNum] = takerFillResults.fillAmount;
 
             // Update current bytes
             offset += OrderHandler.getZeroExOrderDataLength(_orderData, offset);
+            orderNum += 1;
         }
 
-
-        // Approve the taker token for transfer to the Set Vault
-        // ZeroExFillResults.FillResults memory fillResults = fillZeroExOrder(_orderData);
+        return (
+            takerTokens,
+            takerAmounts
+        );
     }
 
     /* ============ Getters ============ */
@@ -95,7 +122,7 @@ contract ZeroExExchangeWrapper
         bytes memory _zeroExOrderData
     )
         private
-        returns (ZeroExFillResults.FillResults memory)
+        returns (TakerFillResults memory)
     {
         uint256 fillAmount = OrderHandler.parseFillAmount(_zeroExOrderData);
         bytes memory signature = OrderHandler.sliceSignature(_zeroExOrderData);
@@ -126,6 +153,9 @@ contract ZeroExExchangeWrapper
             order.makerAssetAmount
         );
 
-        return fillResults;
+        return TakerFillResults({
+            token: takerToken,
+            fillAmount: fillResults.takerAssetFilledAmount
+        });
     }
 }
