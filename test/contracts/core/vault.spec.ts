@@ -238,16 +238,6 @@ contract("Vault", (accounts) => {
         await expectRevertError(subject());
       });
     });
-
-    describe("when the incrementAmount is zero", async () => {
-      beforeEach(async () => {
-        subjectAmountToIncrement = ZERO;
-      });
-
-      it("should revert", async () => {
-        await expectRevertError(subject());
-      });
-    });
   });
 
   describe("#decrementTokenOwner", async () => {
